@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d18">
+  <title>LUMINOUS | Creative Portfolio</title>
+  <meta name="description" content="LUMINOUS — Creative Clipper, Video Editor and Web Developer. Turning ideas into engaging content and digital experiences.">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --bg: #080d18;
+      --panel: rgba(20,36,60,.62);
+      --panel2: rgba(255,255,255,.045);
+      --blue: #438bff;
+      --gold: #d9b76e;
+      --white: #f5f7fc;
+      --muted: #9ba9bd;
+      --border: rgba(130,170,230,.18);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+    body {
+      background:
+        radial-gradient(ellipse at 15% 10%, rgba(35,90,170,.16), transparent 38%),
+        radial-gradient(ellipse at 90% 45%, rgba(30,80,150,.12), transparent 40%),
+        var(--bg);
+      color: var(--white);
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    img, video { max-width: 100%; display: block; }
+    .container { width: min(1120px, 90%); margin: auto; }
+    .muted { color: var(--muted); }
+    .blue { color: var(--blue); }
+    .gold { color: var(--gold); }
+
+    .glass {
+      background: linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.018));
+      border: 1px solid var(--border);
+      box-shadow: 0 18px 55px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.05);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    /* INTRO */
+    #intro {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: grid;
+      place-items: center;
+      background: #050912;
+      transition: opacity 1s ease, visibility 1s ease;
+      overflow: hidden;
+    }
+    #intro.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+    .intro-glow {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 0 35px 15px #438bff;
+      animation: drop 1.2s ease forwards, ripple 2.2s 1.1s ease-out forwards;
+    }
+    .intro-title {
+      position: relative;
+      text-align: center;
+      opacity: 0;
+      animation: reveal 1s 2.2s forwards;
+      letter-spacing: .16em;
+    }
+    .intro-title h1 { font-size: clamp(2.8rem, 12vw, 7rem); line-height: 1; }
+    .intro-title span {
+      display: block;
+      font-size: .75rem;
+      letter-spacing: .65em;
+      color: var(--gold);
+      margin-top: 14px;
+    }
+    .skip-intro {
+      position: absolute;
+      bottom: 35px;
+      right: 6%;
+      border: 1px solid var(--border);
+      color: white;
+      background: rgba(255,255,255,.06);
+      padding: 10px 18px;
+      border-radius: 30px;
+    }
+    @keyframes drop { from { transform: translateY(-45vh) scale(.4); } to { transform: translateY(0) scale(1); } }
+    @keyframes ripple { from { box-shadow: 0 0 35px 15px #438bff; } to { box-shadow: 0 0 0 100vmax rgba(45,110,220,.12); opacity: 0; } }
+    @keyframes reveal { to { opacity: 1; transform: scale(1); } }
+
+    /* NAVIGATION */
+    header {
+      position: fixed;
+      top: 14px;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+    .nav {
+      width: min(1120px, 94%);
+      margin: auto;
+      padding: 11px 18px;
+      border-radius: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand { font-weight: 900; letter-spacing: .16em; font-size: 1.05rem; }
+    .brand span { color: var(--blue); }
+    .nav-links { display: flex; gap: 19px; align-items: center; }
+    .nav-links a { color: #c5d0e0; font-size: .82rem; transition: .2s; }
+    .nav-links a:hover { color: var(--blue); }
+    .nav-cta, .primary-btn {
+      background: linear-gradient(120deg, #438bff, #2355a7);
+      color: white;
+      border: 0;
+      border-radius: 30px;
+      padding: 11px 20px;
+      box-shadow: 0 5px 24px rgba(67,139,255,.22);
+    }
+    .menu-btn { display: none; background: none; color: white; border: 0; font-size: 1.5rem; }
+
+    /* HERO */
+    section { padding: 100px 0; }
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 130px;
+      position: relative;
+    }
+    .hero-content { max-width: 820px; }
+    .availability {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      border: 1px solid rgba(90,220,150,.25);
+      background: rgba(45,170,105,.09);
+      padding: 7px 14px;
+      border-radius: 30px;
+      color: #8de2b2;
+      font-size: .82rem;
+      margin-bottom: 25px;
+    }
+    .availability i {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #58dc91; box-shadow: 0 0 12px #58dc91;
+    }
+    .hero h1 {
+      font-size: clamp(3.5rem, 11vw, 8rem);
+      letter-spacing: .08em;
+      line-height: 1.05;
+      font-weight: 950;
+    }
+    .hero h2 { font-size: clamp(1.1rem, 3vw, 1.8rem); margin: 18px 0; font-weight: 500; }
+    .hero p { color: var(--muted); max-width: 600px; font-size: 1.05rem; }
+    .hero-actions { display: flex; gap: 13px; flex-wrap: wrap; margin-top: 30px; }
+    .outline-btn {
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 10px 20px;
+      background: rgba(255,255,255,.035);
+      color: white;
+    }
+    .eyebrow { color: var(--gold); text-transform: uppercase; letter-spacing: .24em; font-size: .72rem; }
+    .section-title { font-size: clamp(2rem, 5vw, 3.3rem); margin: 8px 0 15px; }
+    .section-intro { color: var(--muted); max-width: 650px; margin-bottom: 35px; }
+
+    /* GENERAL CARDS */
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card { padding: 24px; border-radius: var(--radius); }
+    .card h3 { margin-bottom: 8px; }
+    .card p { color: var(--muted); font-size: .93rem; }
+    .card-icon { font-size: 1.7rem; margin-bottom: 13px; color: var(--blue); }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 9px; }
+    .tag {
+      border: 1px solid var(--border);
+      background: rgba(67,139,255,.07);
+      color: #c6d8f4;
+      padding: 7px 13px;
+      border-radius: 30px;
+      font-size: .82rem;
+    }
+
+    /* ABOUT */
+    .about-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 35px; align-items: center; }
+    .profile-placeholder {
+      min-height: 330px; border-radius: 28px;
+      display: grid; place-items: center;
+      background: radial-gradient(circle, rgba(67,139,255,.22), rgba(20,36,60,.5));
+      border: 1px solid var(--border);
+      color: var(--muted);
+      text-align: center;
+      padding: 20px;
+    }
+    .profile-placeholder img { width: 100%; height: 100%; object-fit: cover; border-radius: 25px; }
+
+    /* VIDEO GALLERY */
+    .video-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 17px; }
+    .video-card { overflow: hidden; border-radius: 20px; }
+    .video-frame {
+      aspect-ratio: 9 / 14;
+      background: linear-gradient(145deg, #172a45, #080d18);
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .video-frame video { width: 100%; height: 100%; object-fit: cover; }
+    .video-empty { color: #7f91aa; text-align: center; padding: 20px; }
+    .video-empty span { display: block; font-size: 2rem; margin-bottom: 8px; }
+    .video-info { padding: 16px; }
+    .video-info h3 { font-size: 1rem; }
+    .video-info p { font-size: .82rem; color: var(--muted); }
+    .play-overlay {
+      position: absolute; inset: 0; display: grid; place-items: center;
+      background: rgba(0,0,0,.08); pointer-events: none;
+    }
+    .play-overlay span {
+      border-radius: 50%; width: 54px; height: 54px;
+      display: grid; place-items: center;
+      background: rgba(10,20,40,.7); border: 1px solid var(--border);
+    }
+
+    /* LUMEX */
+    .lumex-image {
+      width: 100%; border-radius: 18px; border: 1px solid var(--border);
+      margin: 20px 0; object-fit: cover;
+    }
+    .case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; }
+
+    /* CONTACT */
+    .contact-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 20px; }
+    .socials { display: grid; gap: 12px; margin-top: 20px; }
+    .social-link {
+      display: flex; justify-content: space-between; align-items: center;
+      border: 1px solid var(--border); border-radius: 13px;
+      padding: 13px 15px; background: rgba(255,255,255,.025);
+      transition: .2s;
+    }
+    .social-link:hover { border-color: var(--blue); transform: translateX(3px); }
+    form { display: grid; gap: 13px; }
+    input, textarea, select {
+      width: 100%; padding: 13px 15px; border-radius: 12px;
+      color: white; background: rgba(4,10,20,.6);
+      border: 1px solid var(--border); outline: none;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--blue); }
+    textarea { min-height: 125px; resize: vertical; }
+    option { background: #101a2a; }
+
+    /* FOOTER */
+    footer { padding: 55px 0 30px; border-top: 1px solid var(--border); text-align: center; }
+    footer h2 { font-size: clamp(2.5rem, 9vw, 6rem); letter-spacing: .15em; }
+    footer p { color: var(--muted); }
+
+    /* GOJO-INSPIRED MASCOT */
+    #mascot {
+      position: fixed; bottom: 17px; left: 17px; z-index: 800;
+      width: 75px; height: 90px; cursor: pointer;
+      animation: mascotWalk 4s ease-in-out infinite;
+      user-select: none;
+    }
+    .chibi { position: relative; width: 70px; height: 85px; }
+    .hair {
+      position: absolute; top: 0; left: 12px; width: 48px; height: 36px;
+      background: #f2f5ff; border-radius: 50% 50% 35% 35%;
+      box-shadow: -9px 0 #e5ecff, 8px -5px #fff;
+    }
+    .head {
+      position: absolute; top: 19px; left: 14px; width: 43px; height: 39px;
+      background: #f4d7c6; border-radius: 45%;
+    }
+    .blindfold {
+      position: absolute; top: 31px; left: 13px; width: 45px; height: 13px;
+      background: #111827; border-radius: 5px; z-index: 2;
+    }
+    .body-chibi {
+      position: absolute; bottom: 0; left: 18px; width: 37px; height: 31px;
+      background: #101827; border-radius: 12px 12px 8px 8px;
+    }
+    .mascot-label {
+      position: absolute; left: 80px; top: 28px; white-space: nowrap;
+      background: rgba(20,36,60,.9); border: 1px solid var(--border);
+      padding: 5px 10px; border-radius: 20px; font-size: .7rem;
+      opacity: 0; transition: .2s;
+    }
+    #mascot:hover .mascot-label, #mascot.show-label .mascot-label { opacity: 1; }
+    @keyframes mascotWalk { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+
+    /* MODALS */
+    .modal {
+      display: none; position: fixed; inset: 0; z-index: 5000;
+      background: rgba(0,0,0,.76); backdrop-filter: blur(12px);
+      align-items: center; justify-content: center; padding: 18px;
+    }
+    .modal.open { display: flex; }
+    .modal-box {
+      width: min(600px, 100%); max-height: 90vh; overflow: auto;
+      padding: 25px; border-radius: 22px; position: relative;
+    }
+    .close {
+      position: absolute; top: 12px; right: 15px;
+      border: 0; background: none; color: white; font-size: 1.6rem;
+    }
+    .admin-panel { display: none; }
+    .admin-panel.visible { display: block; }
+    .admin-list { display: grid; gap: 10px; margin-top: 18px; }
+    .admin-item {
+      padding: 12px; border: 1px solid var(--border); border-radius: 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .small-btn { padding: 7px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: white; }
+    .danger { color: #ff9696; border-color: rgba(255,100,100,.35); }
+    .status { color: var(--muted); font-size: .85rem; margin-top: 8px; }
+
+    @media (max-width: 850px) {
+      .nav-links {
+        display: none; position: absolute; top: 65px; left: 3%; width: 94%;
+        padding: 20px; border-radius: 20px; background: #101b2c;
+        border: 1px solid var(--border); flex-direction: column; align-items: stretch;
+      }
+      .nav-links.open { display: flex; }
+      .menu-btn { display: block; }
+      .nav-cta { display: none; }
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .about-grid, .contact-grid, .case-grid { grid-template-columns: 1fr; }
+      .video-grid { grid-template-columns: repeat(2, 1fr); }
+      .video-card:first-child { grid-column: span 2; }
+    }
+    @media (max-width: 520px) {
+      section { padding: 75px 0; }
+      .grid { grid-template-columns: 1fr; }
+      .video-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .video-card:first-child { grid-column: span 2; }
+      .video-info { padding: 11px; }
+      #mascot { transform: scale(.85); transform-origin: bottom left; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- CINEMATIC INTRO -->
+  <div id="intro">
+    <div class="intro-glow"></div>
+    <div class="intro-title">
+      <h1>LUMINOUS</h1>
+      <span>PORTFOLIO</span>
+    </div>
+    <button class="skip-intro" onclick="skipIntro()">Skip Intro →</button>
+  </div>
+
+  <!-- NAVIGATION -->
+  <header>
+    <nav class="nav glass">
+      <a href="#home" class="brand">LUMI<span>NOUS</span></a>
+      <button class="menu-btn" onclick="toggleMenu()" aria-label="Open navigation">☰</button>
+      <div class="nav-links" id="navLinks">
+        <a href="#home" onclick="closeMenu()">Home</a>
+        <a href="#about" onclick="closeMenu()">About</a>
+        <a href="#clipper" onclick="closeMenu()">Clipper</a>
+        <a href="#editor" onclick="closeMenu()">Video Editor</a>
+        <a href="#web" onclick="closeMenu()">Web Design</a>
+        <a href="#services" onclick="closeMenu()">Services</a>
+        <a href="#contact" onclick="closeMenu()">Contact</a>
+        <button class="small-btn" onclick="replayIntro()">Replay Intro</button>
+      </div>
+      <button class="nav-cta" onclick="openHire()">Hire Me</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero container" id="home">
+      <div class="hero-content">
+        <div class="availability"><i></i> Available for Work</div>
+        <div class="eyebrow">Creative Portfolio · 2026</div>
+        <h1>LUMINOUS</h1>
+        <h2>Creative Clipper · Video Editor · Web Developer</h2>
+        <p>Digital Creator · Content Repurposing · Community Management</p>
+        <p style="margin-top:15px">Turning ideas into engaging content and digital experiences.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" onclick="openHire()">Hire Me ↗</button>
+          <a href="#work" class="outline-btn">Explore My Work ↓</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="container" id="about">
+      <div class="eyebrow">A little about me</div>
+      <h2 class="section-title">Behind the <span class="blue">Creativity.</span></h2>
+      <div class="about-grid">
+        <div class="profile-placeholder glass" id="profilePhoto">
+          <div>
+            <div style="font-size:3rem">✦</div>
+            <p>YOUR PROFILE PHOTO</p>
+            <small>Add your photo through the admin dashboard.</small>
+          </div>
+        </div>
+        <div>
+          <h3 style="font-size:1.5rem;margin-bottom:15px">I'm LUMINOUS.</h3>
+          <p class="muted">I work across creative content, video editing, web design and online communities. I enjoy turning ideas into clear, engaging experiences — whether that's a short-form video, a digital platform or an active online community.</p>
+          <p class="muted" style="margin-top:14px">My approach is simple: understand the goal, pay attention to the details and create work that connects with people.</p>
+          <div class="tag-list" style="margin-top:22px">
+            <span class="tag">Creative Clipping</span>
+            <span class="tag">Video Editing</span>
+            <span class="tag">Web Development</span>
+            <span class="tag">Community Management</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURED WORK -->
+    <section class="container" id="work">
+      <div class="eyebrow">Selected work</div>
+      <h2 class="section-title">What I <span class="blue">Create.</span></h2>
+      <p class="section-intro">A selection of creative and digital work. More projects will be added as they are ready.</p>
+      <div class="grid">
+        <article class="card glass">
+          <div class="card-icon">◉</div>
+          <h3>Short-form Clipping</h3>
+          <p>Finding engaging moments and turning longer content into focused short videos.</p>
+        </article>
+        <article class="card glass">
+          <div class="card-icon">▶</div>
+          <h3>Video Editing</h3>
+          <p>Editing videos with pacing, structure and visual details that keep viewers watching.</p>
+        </article>
+        <article class="card glass">
+          <div class="card-icon">⌘</div>
+          <h3>Web Design & Development</h3>
+          <p>Building digital experiences with clear layouts and thoughtful user interfaces.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- CLIPPER -->
+    <section class="container" id="clipper">
+      <div class="eyebrow">Short-form content</div>
+      <h2 class="section-title">Clipper <span class="blue">Showcase.</span></h2>
+      <p class="section-intro">A selection of my clipping work. Video slots will fill automatically when I publish work through the private dashboard.</p>
+      <div class="video-grid" id="clipperVideos">
+        <div class="video-card glass"><div class="video-frame"><div class="video-empty"><span>＋</span>Clipper video 1</div></div><div class="video-info"><h3>Clipper Project 01</h3><p>Video coming soon</p></div></div>
+        <div class="video-card glass"><div class="video-frame"><div class="video-empty"><span>＋</span>Clipper video 2</div></div><div class="video-info"><h3>Clipper Project 02</h3><p>Video coming soon</p></div></div>
+        <div class="video-card glass"><div class="video-frame"><div class="video-empty"><span>＋</span>Clipper video 3</div></div><div class="video-info"><h3>Clipper Project 03</h3><p>Video coming soon</p></div></div>
+      </div>
+    </section>
+
+    <!-- VIDEO EDITOR -->
+    <section class="container" id="editor">
+      <div class="eyebrow">Creative editing</div>
+      <h2 class="section-title">Video Editor <span class="blue">Showcase.</span></h2>
+      <p class="section-intro">Selected editing projects, with room for three featured videos.</p>
+      <div class="video-grid" id="editorVideos">
+        <div class="video-card glass"><div class="video-frame"><div class="video-empty"><span>＋</span>Editor video 1</div></div><div class="video-info"><h3>Editing Project 01</h3><p>Video coming soon</p></div></div>
+        <div class="video-card glass"><div class="video-frame"><div class="video-empty"><span>＋</span>Editor video 2</div></div><div class="video-info"><h3>Editing Project 02</h3><p>Video coming soon</p></div></div>
+        <div class="video-card glass"><div class="video-frame"><div class="video-empty"><span>＋</span>Editor video 3</div></div><div class="video-info"><h3>Editing Project 03</h3><p>Video coming soon</p></div></div>
+      </div>
+    </section>
+
+    <!-- WEB DESIGN / LUMEX -->
+    <section class="container" id="web">
+      <div class="eyebrow">Web design & development</div>
+      <h2 class="section-title">Digital <span class="blue">Experiences.</span></h2>
+      <div class="card glass case-grid">
+        <div>
+                    <div class="eyebrow">Featured project</div>
+          <h3>LUMEX — Creator Clipping Network</h3>
+          <p>
+            A digital platform built to connect creators, manage clipping
+            campaigns, track submissions and reward performance.
+          </p>
+
+          <div class="feature-list">
+            <span>Creator Dashboard</span>
+            <span>Campaign Management</span>
+            <span>Clip Submissions</span>
+            <span>Leaderboard</span>
+            <span>Wallet</span>
+            <span>Admin Control Room</span>
+          </div>
+
+          <a class="button primary"
+             href="https://lumexol.netlify.app/"
+             target="_blank"
+             rel="noopener noreferrer">
+            Explore LUMEX
+          </a>
+        </div>
+
+        <div class="case-image">
+          <img
+            src="lumex-preview.png"
+            alt="LUMEX creator dashboard preview"
+            loading="lazy"
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- MODERATOR -->
+    <section class="container" id="moderator">
+      <div class="eyebrow">Community management</div>
+      <h2 class="section-title">Moderator <span class="blue">& Community.</span></h2>
+
+      <div class="card glass">
+        <h3>Discord & Telegram Moderation</h3>
+        <p>
+          Helping communities stay organized, active and welcoming through
+          member support, engagement and discussion management.
+        </p>
+      </div>
+    </section>
+
+    <!-- CONTENT REPURPOSING -->
+    <section class="container" id="repurposing">
+      <div class="eyebrow">Content strategy</div>
+      <h2 class="section-title">Content <span class="blue">Repurposing.</span></h2>
+
+      <div class="card glass">
+        <h3>Long-form to Short-form</h3>
+        <p>
+          Finding engaging moments from longer videos and transforming them
+          into short-form content for TikTok, Reels and YouTube Shorts.
+        </p>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="container" id="contact">
+      <div class="eyebrow">Let's work together</div>
+      <h2 class="section-title">Let's Create <span class="blue">Something.</span></h2>
+
+      <div class="card glass">
+        <h3>Available for Work</h3>
+        <p>Have a project in mind? Reach out directly.</p>
+
+        <div class="social-links">
+          <a href="https://discord.com/users/1388308036392718408"
+             target="_blank" rel="noopener noreferrer">Discord</a>
+
+          <a href="https://t.me/light_clx"
+             target="_blank" rel="noopener noreferrer">Telegram</a>
+
+          <a href="https://x.com/GbenroWill78749"
+             target="_blank" rel="noopener noreferrer">X</a>
+
+          <a href="https://www.tiktok.com/@ryomen_lhm"
+             target="_blank" rel="noopener noreferrer">TikTok</a>
+        </div>
+
+        <a class="button primary"
+           href="mailto:shadowsid71@gmail.com">
+          Contact LUMINOUS
+        </a>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="container">
+      <h2>LUMINOUS</h2>
+      <p>Let's create something worth remembering.</p>
+      <p>© 2026 LUMINOUS. All rights reserved.</p>
+    </footer>
+
+  </main>
+</body>
+</html>
